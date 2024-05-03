@@ -1,28 +1,27 @@
 import inspect
+import sqlite3
 from typing import TYPE_CHECKING
-from ..tokenizer.types import TokenTypes
+from datetime import datetime, date, timedelta
+from ezstorage.tokenizer.types import TokenTypes
+from ezstorage.providers.__layout__ import LayoutProvider
+from ezstorage.types.sqlite import SQLiteTypes
+
 
 if TYPE_CHECKING:    
-    from ..table import Table
-    from ..tokenizer.token import Token
-
-import sqlite3
-from .__template__ import DbProvider
-
-TYPES_SQLITE = {
-    int: 'INTEGER',
-    str: 'TEXT',
-    float: 'REAL',
-    bool: 'INTEGER',
-}
+    from ezstorage.table import Table
+    from ezstorage.tokenizer.token import Token
 
 
-class Sqlite(DbProvider):
+
+class Sqlite(LayoutProvider):
     def __init__(self, path: str):
         self.path = path
         self.name = path.split("/")[-1]
         self.conn = sqlite3.connect(path)
         self.cursor = None
+
+        # Initialize the types
+        self.types = SQLiteTypes()
 
         # Fetch the existing tables
         cursor = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
@@ -55,8 +54,9 @@ class Sqlite(DbProvider):
         """Drop the table from the database"""
         if not table.__exist__:
             return
-        
-        self.conn.execute(f"DROP TABLE {table.__table__}")
+
+        query = f"DROP TABLE %s" % table.__table__
+        self.conn.execute(query)
         self.conn.commit()
         table.__exist__ = False
     
@@ -69,13 +69,15 @@ class Sqlite(DbProvider):
         missing_columns = self._get_missing_columns(table)
         for column in missing_columns:
             column_type = self._convert_type(table.__annotations__[column])
-            self.conn.execute(f"ALTER TABLE {table.__table__} ADD COLUMN {column} {column_type}")
+            query = f"ALTER TABLE %s ADD COLUMN %s %s" % (table.__table__, column, column_type)
+            self.conn.execute(query)
             self.conn.commit()
 
         # Remove the extra columns
         extra_columns = self._get_extra_columns(table)
         for column in extra_columns:
-            self.conn.execute(f"ALTER TABLE {table.__table__} DROP COLUMN {column}")
+            query = f"ALTER TABLE %s DROP COLUMN %s" % (table.__table__, column)
+            self.conn.execute(query)
             self.conn.commit()
 
         # Update the schema
@@ -95,8 +97,8 @@ class Sqlite(DbProvider):
         """Insert a row into the table"""
         columns = ', '.join(obj.keys())
         values = ', '.join([f"'{value}'" if isinstance(value, str) else str(value) for value in obj.values()])
-        self.conn.execute(f"INSERT INTO {table} ({columns}) VALUES ({values})")
-        # self.conn.commit()
+        query = f"INSERT INTO %s (%s) VALUES (%s)" % (table, columns, values)
+        self.conn.execute(query)
 
     def execute(self, query: str):
         """Select the table from the database"""
@@ -108,11 +110,6 @@ class Sqlite(DbProvider):
     ##########################################
     # Utility functions
     ##########################################
-    def _convert_type(self, type):
-        """Convert the type to the sqlite type""" 
-        assert type in TYPES_SQLITE, f"Type {type} not supported"
-        return TYPES_SQLITE[type]
-    
     def _get_missing_columns(self, table: "Table") -> list:
         """Return the missing columns"""
         return [key for key in table.__annotations__ if key not in table.__schema__]
@@ -141,7 +138,6 @@ class Sqlite(DbProvider):
 
         for token in tokens:
             query += " "
-            print(token)
             if inspect.isclass(token.token_type):
                 query += "%s" % token.value
                 continue

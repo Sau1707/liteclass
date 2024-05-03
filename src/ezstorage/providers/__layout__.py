@@ -5,7 +5,8 @@ from typing import dataclass_transform, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..table import Table
 
-class DbProvider(ABC):
+
+class LayoutProvider(ABC):
     """
         Abstract class for the database provider
         Each provider extend this class and implement the methods that are provider specific

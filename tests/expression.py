@@ -1,5 +1,5 @@
 import unittest
-from ezstorage.tokenizer import LambdaTokenizer, Token
+from ezstorage.tokenizer import LambdaTokenizer
 
 class Car:
     id = 0
@@ -49,8 +49,8 @@ class TestLambdaCleanTokenizer(unittest.TestCase):
         self.assertEqual(cleaned, "(Car.id < 0 and Car.id > 0) and (Car.id == 0 or (Car.id != 0 and Car.id >= 0))")
 
     def test_lambda_tokenizer_in_object(self):
-        obj = {
-            "x": lambda: Car.id > 0
+        obj = { 
+            "x": lambda: Car.id > 0 
         }
         cleaned = LambdaTokenizer.get_expression(obj["x"])
         self.assertEqual(cleaned, "Car.id > 0")

@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING
 from .tokenizer.tokenizer import LambdaTokenizer
 
 if TYPE_CHECKING:
-    from .providers.__template__ import DbProvider
+    from .providers.__layout__ import LayoutProvider
 
 
 class Table:
     __exist__: bool = False # If the table exists
     __table__: str = None # The table name
     __schema__: dict = {} # Key value pairs of the schema
-    __provider__: "DbProvider" = None # The provider
+    __provider__: "LayoutProvider" = None # The provider
 
     def __init__(self, **kwargs):
         # Check if the table name is set

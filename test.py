@@ -21,13 +21,12 @@ def create_users(count: int):
         user.save()
     db.commit()
 
-    # Or
-    with db:
-        for i in range(count):
-            name = random.choice(['John', 'Doe', 'Jane', 'Smith', 'Michael', 'Jordan', 'Lebron', 'James', 'Kobe', 'Bryant'])
-            age = random.randint(1, 100)
-            user = User(name=name, age=age)
-            user.save()
+    # with db:
+    #     for i in range(count):
+    #         name = random.choice(['John', 'Doe', 'Jane', 'Smith', 'Michael', 'Jordan', 'Lebron', 'James', 'Kobe', 'Bryant'])
+    #         age = random.randint(1, 100)
+    #         user = User(name=name, age=age)
+    #         user.save()
 
 # Drop the table if it exists, fresh start
 db.drop_table(User)

@@ -79,14 +79,8 @@ print(df)
 -   [ ] dict
 -   [ ] set
 -   [ ] tuple
--   [ ] enum
 -   [ ] json
--   [ ] bytes
--   [ ] bytearray
 -   [ ] uuid
--   [ ] Decimal
--   [ ] Any
--   [ ] Union
 
 ## Providers
 
